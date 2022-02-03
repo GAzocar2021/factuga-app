@@ -70,13 +70,10 @@ _Iniciamos sesión_
 ```
 Admin: admin@factugaapp.com
 pass: 12345678
-```
 Cliente 1: cliente1@factugaapp.com
 pass: 90123456
-```
 Cliente 2: cliente2@factugaapp.com
 pass: 78901234
-```
 Cliente 3: cliente3@factugaapp.com
 pass: 56789012
 ```
