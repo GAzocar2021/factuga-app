@@ -21,6 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'is_admin'
     ];
 
     /**
@@ -41,4 +42,14 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function purchasesPending()
+    {
+        return $this->hasMany(PurchasePending::class);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany(Invoices::class);
+    }
 }
