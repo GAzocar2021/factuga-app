@@ -18,9 +18,11 @@
 @endsection
 
 @section('content')
-<form id="purchase-form" method="POST" action="{{ route('purchases.store') }}" data-parsley-validate>
+<form id="demo-form" method="POST" action="{{ route('purchases.store') }}" data-parsley-validate>
   @csrf
-  <input type="hidden" name="user_id" value="{{ Auth::user->id }}">
+  <input type="hidden" name="user_id" value="{{ $user }}">
+  <input type="hidden" name="pending" value="{{ $existPending }}">
+  <input type="hidden" name="invoice_id" value="{{ $invoice->id ?? '' }}">
   <div class="x_panel">
     <div class="x_title">
       <h2><i class="fa fa-cubes"></i> Nueva Compra</h2>
@@ -50,7 +52,7 @@
                         <div class="col-md-6 col-sm-6 col-xs-12">
                             <label for="product_id">Producto* :</label>
                             <select id="product_id" name="product_id" class="form-control select2 @error('product_id') parsley-error @enderror" value="{{ old('product_id') }}" required data-parsley-trigger="change">
-                                <option value="" disabled>Seleccionar...</option>
+                                <option value="" selected>Seleccionar...</option>
                                 @foreach ($products as $item)
                                 <option value="{{ $item->id }}">{{ $item->code }} - {{ $item->name }}</option>
                                 @endforeach
@@ -70,6 +72,16 @@
                                 <strong>{{ $message }}</strong>
                                 </span>
                             @enderror
+                        </div>
+
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <label for="tax">Impuesto %:</label>
+                            <input type="text" name="tax" id="tax" class="form-control @error('tax') parsley-error @enderror" value="0" name="tax" readonly />
+                        </div>
+
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <label for="amount">Total sin Impuesto:</label>
+                            <input type="text" name="amount" id="amount" class="form-control @error('amount') parsley-error @enderror" value="0" name="amount" readonly />
                         </div>
                     </div>
                 </div>
@@ -109,44 +121,25 @@
     <script src="{{ asset('/vendors/starrr/dist/starrr.js') }}"></script>
     <script>
         let $select = document.getElementById('product_id');
+
         jQuery(document).ready(function($){
             $(document).ready(function() {
                 $('#product_id').select2();
 
-                let remove = () => {
-                    for (let i = $select.options.length; i >= 0; i--) {
-                        $select.remove(i);
-                    }
-                };
+                $('#product_id').on('change', function () {
+                    let productId = $('#product_id').val();
+                    let url = "../products/" + productId + "/detail";
 
-                let change = (data) => {
-                    for(let x in data) {
-                        let option = document.createElement('option');
-                        option.value = data[x].id;
-                        option.text = data[x].name;
-                        $select.appendChild(option);
-                    }
-                };
+                    $.get(url, function( data ) {
+                        let quantity = $('#quantity').val();
+                        let price = 0;
+                        let tax = data.tax_perc
 
-                $("#image").on('change', function(e) {
-                    let x = e.target;
-                    if (!x.files || !x.files.length) {
-                    return false;
-                    }
+                        price = data.cost * quantity;
 
-                    let img = x.files[0];
-                    const objectURL = URL.createObjectURL(img);
-                    $("#previewlogo").attr('src',objectURL);
-                });
-
-                $("#cost, #tax_perc").keyup(function() {
-                    let cost = $('#cost').val();
-                    let tax = $('#tax_perc').val();
-                    let price = 0;
-
-                    price = cost * (1 + (tax / 100));
-                    console.log(price);
-                    $("#price").val(price.toFixed(2));
+                        $("#tax").val(tax.toFixed(2));
+                        $("#amount").val(price.toFixed(2));
+                    });
                 });
             });
         });

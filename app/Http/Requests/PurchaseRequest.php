@@ -24,6 +24,7 @@ class PurchaseRequest extends FormRequest
     public function rules()
     {
         return [
+            'product_id'    => 'required|numeric',
             'quantity'      => ['required', 'numeric']
         ];
     }
@@ -36,6 +37,7 @@ class PurchaseRequest extends FormRequest
     public function messages()
     {
         return [
+            'product_id.required'   => 'El campo Producto es obligatorio.',
             'quantity.required'     => 'El campo Cantidad es obligatorio.',
         ];
     }

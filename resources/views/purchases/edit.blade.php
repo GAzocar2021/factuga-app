@@ -18,14 +18,10 @@
 @endsection
 
 @section('content')
-<form id="purchase-form" method="POST" action="{{ route('purchases.update', $purchase->id) }}" data-parsley-validate>
+<form id="demo-form" method="POST" action="{{ route('purchases.update', $purchase->id) }}" data-parsley-validate>
   @csrf
-  @if ($status === 1)
+  @method('PUT')
   <input type="hidden" name="user_id" value="{{ $purchase->user_id }}">
-  @else
-  <input type="hidden" name="invoice_id" value="{{ $purchase->invoice_id }}">
-  @endif
-  <input type="hidden" name="status" value="{{ $status }}">
   <div class="x_panel">
     <div class="x_title">
       <h2><i class="fa fa-cubes"></i> Editar Compra</h2>
@@ -55,7 +51,7 @@
                         <div class="col-md-6 col-sm-6 col-xs-12">
                             <label for="name">Producto* :</label>
                             <input type="hidden" name="product_id" value="{{ $purchase->product_id }}">
-                            <input type="text" id="name" class="form-control @error('name') parsley-error @enderror" value="{{ $purchase }}" name="name" readonly />
+                            <input type="text" id="name" class="form-control @error('name') parsley-error @enderror" value="{{ $purchase->product->name }}" name="name" readonly />
                         </div>
 
                         <div class="col-md-6 col-sm-6 col-xs-12">
@@ -73,7 +69,7 @@
             <br/>
             <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="actionBar">
-                    <button type="submit" class="btn btn-primary float-rigth">Guardar</button>
+                    <button type="submit" class="btn btn-primary float-rigth">Comprar</button>
                 </div>
             </div>
           </div>

@@ -48,12 +48,6 @@ class InvoiceSeeder extends Seeder
                 'date_pay' => '29/01/2022',
                 'status' => 'PAGADO',
             ],
-            [
-                'user_id' => 2,
-                'number' => '00001005',
-                'amount' => 373.45,
-                'date' => '30/01/2022',
-            ],
         ];
 
         foreach ($invoice as $key => $value) {

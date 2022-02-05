@@ -26,22 +26,16 @@ class PurchaseController extends Controller
     public function index()
     {
         $userId = Auth::user()->id;
-        $existPending = false;
         $pendings = PurchasePending::with(['user', 'product'])->where('user_id', $userId)->orderBy('id', 'desc')->get();
 
-        if($pendings) {
-            foreach ($pendings as $item) {
-                $existPending = true;
-            }
-        }
+        $invoice = Invoice::with('user')->where('user_id', $userId)->latest('number')->first();
+        $purchases = Purchase::with(['product', 'invoice'])->where('invoice_id', $invoice->id)->orderBy('id', 'desc')->get();
 
-        if (!$existPending) {
-            $invoice = Invoice::with('user')->where('user_id', $userId)->where('status', 'PENDIENTE')->last();
-            $purchases = Purchase::with(['product', 'invoice'])->where('invoice_id', $invoice->id)->orderBy('id', 'desc')->get();
-        }
+        // dd($pendings, $invoice, $purchases);
 
         return view('purchases.index', [
-            'purchases' => ($existPending) ? $pendings : $purchases,
+            'purchases' => $purchases,
+            'pendings' => $pendings,
         ]);
     }
 
@@ -52,11 +46,21 @@ class PurchaseController extends Controller
      */
     public function create()
     {
+        $existPPending = false;
+        $userId = Auth::user()->id;
+
         $products = Product::where('is_active', 'ACTIVO')->get();
+        $invoice = Invoice::with(['user', 'purchases'])->where('user_id', $userId)->where('status', 'PENDIENTE')->latest('number')->first();
+
+        if (!$invoice) {
+            $existPPending = true;
+        }
 
         return view('purchases.create', [
             'products' => $products,
-            'folio' => Product::generateFolio()
+            'user' => $userId,
+            'invoice' => $invoice,
+            'existPending' => $existPPending
         ]);
     }
 
@@ -68,7 +72,26 @@ class PurchaseController extends Controller
      */
     public function store(PurchasePendingRequest $request)
     {
-        PurchasePending::create($request->all());
+        if ($request['pending'] == 0) {
+            $purchase = new Purchase();
+
+            $purchase->invoice_id = $request->invoice_id;
+            $purchase->product_id = $request->product_id;
+            $purchase->quantity = $request->quantity;
+            $purchase->amount = $request->amount;
+            $purchase->save();
+
+            $invoice = Invoice::findOrFail($request->invoice_id);
+
+            $total = $invoice->amount + ($request->amount * $request->quantity);
+
+            $invoice->amount = $total;
+            $invoice->save();
+        } else {
+            PurchasePending::create($request->all());
+        }
+
+        Product::discountStock($request->product_id, $request->quantity);
 
         return redirect(route('purchases.index'))->with('success', 'Producto Comprado');
     }
@@ -79,14 +102,12 @@ class PurchaseController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id, $status = 1)
+    public function edit($id)
     {
         $pending = PurchasePending::findOrFail($id);
-        $purchase = Purchase::findOrFail($id);
 
         return view('purchases.edit', [
-            'purchase' => ($status === 1) ? $pending : $purchase,
-            'status' => $status
+            'purchase' => $pending
         ]);
     }
 
@@ -99,15 +120,12 @@ class PurchaseController extends Controller
      */
     public function update(PurchaseRequest $request, $id)
     {
-        $status = $request["status"];
+        $purchase = PurchasePending::findOrFail($id);
 
-        if ($status === 1) {
-            $purchase = PurchasePending::findOrFail($id);
-        } else {
-            $purchase = Purchase::findOrFail($id);
-        }
+        $purchase->quantity = $purchase->quantity + $request->quantity;
+        $purchase->save();
 
-        $purchase->update($request->all());
+        Product::discountStock($purchase->product_id, $request->quantity);
 
         return redirect(route('purchases.index'))->with('success', 'Compra Actualizada');
     }
@@ -115,21 +133,33 @@ class PurchaseController extends Controller
     /**
      * Remove the specified resource from storage.
      *
-     * @param  \App\Models\PurchasePending  $pending
+     * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PurchasePending $pending)
+    public function destroy($id, $status)
     {
         $total = 0;
 
-        $product = Product::findOrFail($pending->id);
+        if ($status == '1') {
+            $purchase = PurchasePending::findOrFail($id);
+        } else {
+            $purchase = Purchase::with(['product', 'invoice'])->findOrFail($id);
+            $invoice = Invoice::findOrFail($purchase->invoice_id);
 
-        $total = $product->stock + $pending->quantity;
+            $price = $invoice->amount - ($purchase->product->price * $purchase->quantity);
+
+            $invoice->amount = $price;
+            $invoice->save();
+        }
+
+        $product = Product::findOrFail($purchase->product_id);
+
+        $total = $product->stock + $purchase->quantity;
 
         $product->stock = $total;
         $product->save();
 
-        $pending->delete();
+        $purchase->delete();
         return redirect()->route('purchases.index')->with('success', 'Compra Eliminada');
     }
 

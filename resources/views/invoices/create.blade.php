@@ -18,7 +18,7 @@
 @endsection
 
 @section('content')
-<form id="invoice-form" method="POST" action="{{ route('invoices.store') }}" data-parsley-validate>
+<form id="demo-form" method="POST" action="{{ route('invoices.store') }}" data-parsley-validate>
   @csrf
   <div class="x_panel">
     <div class="x_title">
@@ -60,21 +60,26 @@
                     <div class="col-md-6 col-sm-6 col-xs-12">
                         <label for="user_id">Clientes* :</label>
                         <select id="user_id" name="user_id" class="form-control select2 @error('user_id') parsley-error @enderror" value="{{ old('user_id') }}" required data-parsley-trigger="change">
-                            <option value="" disabled>Seleccionar...</option>
+                            <option value="" selected>Seleccionar...</option>
                             @foreach ($clients as $item)
                             <option value="{{ $item->id }}">{{ $item->name }}</option>
                             @endforeach
                         </select>
-                    </div>
-
-                    <div class="col-md-4 col-sm-6 col-xs-12">
-                        <label for="amount">Total :</label>
-                        <input type="number" min="1" step="any" id="amount" class="form-control @error('amount') parsley-error @enderror" name="amount" value="{{ old('amount') }}" data-parsley-trigger="change" readonly />
-                        @error('amount')
+                        @error('product_id')
                             <span class="parsley-required red" role="alert">
                             <strong>{{ $message }}</strong>
                             </span>
                         @enderror
+                    </div>
+
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <label for="quantity">Cantidad de Productos :</label>
+                        <input type="text" id="quantity" name="quantity" class="form-control @error('quantity') parsley-error @enderror" value="0" name="quantity" readonly />
+                    </div>
+
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <label for="amount">Total :</label>
+                        <input type="text" id="amount" name="amount" class="form-control @error('amount') parsley-error @enderror" value="0" name="amount" readonly />
                     </div>
                 </div>
             </div>
@@ -82,7 +87,7 @@
             <br/>
             <div class="col-md-12 col-sm-12 col-xs-12">
                 <div class="actionBar">
-                <button type="submit" class="btn btn-primary float-rigth">Guardar</button>
+                <button type="submit" class="btn btn-primary float-rigth">Generar Factura</button>
                 </div>
             </div>
           </div>
@@ -117,25 +122,17 @@
             $(document).ready(function() {
                 $('#user_id').select2();
 
-                $("#image").on('change', function(e) {
-                    let x = e.target;
-                    if (!x.files || !x.files.length) {
-                    return false;
-                    }
+                $('#user_id').on('change', function () {
+                    let userId = $('#user_id').val();
+                    let url = "../invoices/" + userId + "/pending";
 
-                    let img = x.files[0];
-                    const objectURL = URL.createObjectURL(img);
-                    $("#previewlogo").attr('src',objectURL);
-                });
+                    $.get(url, function( data ) {
+                        let quantity = data.quantity;
+                        let amount = data.amount;
 
-                $("#cost, #tax_perc").keyup(function() {
-                    let cost = $('#cost').val();
-                    let tax = $('#tax_perc').val();
-                    let price = 0;
-
-                    price = cost * (1 + (tax / 100));
-                    console.log(price);
-                    $("#price").val(price.toFixed(2));
+                        $("#quantity").val(quantity.toFixed(0));
+                        $("#amount").val(amount.toFixed(2));
+                    });
                 });
             });
         });

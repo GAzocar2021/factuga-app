@@ -26,7 +26,7 @@ class PurchasePending extends Model
         return $this->belongsTo(Product::class);
     }
 
-    public function erase(PurchasePending $pending)
+    public static function erase(PurchasePending $pending)
     {
         $pending->delete();
         return redirect()->route('purchases.index')->with('success', 'Compra Eliminada');

@@ -12,7 +12,7 @@
 @endsection
 
 @section('content')
-<form id="product-form" method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" data-parsley-validate>
+<form id="demo-form" method="POST" action="{{ route('products.store') }}" enctype="multipart/form-data" data-parsley-validate>
   @csrf
   <div class="x_panel">
     <div class="x_title">
@@ -204,7 +204,6 @@
                     let price = 0;
 
                     price = cost * (1 + (tax / 100));
-                    console.log(price);
                     $("#price").val(price.toFixed(2));
                 });
             });

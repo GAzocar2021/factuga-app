@@ -27,7 +27,7 @@ class InvoiceController extends Controller
      */
     public function index()
     {
-        $invoices = Invoice::orderBy('id', 'desc')->get();
+        $invoices = Invoice::with(['user', 'purchases'])->orderBy('id', 'desc')->get();
         return view('invoices.index', compact('invoices'));
     }
 
@@ -38,13 +38,24 @@ class InvoiceController extends Controller
      */
     public function create()
     {
-        $number = str_pad('0', 8, '0', STR_PAD_LEFT);
+        $number = '';
 
-        $invoice = Invoice::last();
-        $clients = PurchasePending::with(['user'])->get();
+        $invoice = Invoice::latest('number')->first();
 
         $nextNumber = intval($invoice->number) + 1;
         $number = str_pad($nextNumber, 8, '0', STR_PAD_LEFT);
+
+        $pendings = PurchasePending::with(['user', 'product'])->get();
+
+        $clients = [];
+
+        foreach ($pendings as $pending) {
+            $user = User::findOrFail($pending->user->id);
+
+            array_push($clients, $user->id);
+        }
+
+        $clients = User::whereIn('id', $clients)->get();
 
         return view('invoices.create', [
             'clients' => $clients,
@@ -59,11 +70,17 @@ class InvoiceController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(InvoiceRequest $request)
+    public function store(Request $request)
     {
-        Invoice::create($request->all());
+        $invoice = new Invoice();
 
-        $invoice = Invoice::last();
+        $invoice->user_id = $request->user_id;
+        $invoice->number = $request->number;
+        $invoice->date = $request->date;
+        $invoice->amount = $request->amount;
+        $invoice->save();
+
+        $invoice = Invoice::latest('id')->first();
         $pendings = PurchasePending::where('user_id', $request['user_id'])->get();
 
         foreach ($pendings as $item) {
@@ -120,10 +137,9 @@ class InvoiceController extends Controller
         ]);
     }
 
-    public function pendingList()
+    public function pending()
     {
         $invoices = Invoice::where('status', 'PENDIENTE')->get();
-        // dd($invoices);
         return view('invoices.pending', compact('invoices'));
     }
 
@@ -174,5 +190,26 @@ class InvoiceController extends Controller
         }
 
         return redirect(route('invoices.index'))->with('success', "Cancelación de factura #{$invoice->number} exitosa");
+    }
+
+    public function detail($id)
+    {
+        $total = 0;
+        $qty = 0;
+        $data = [];
+
+        $pendings = PurchasePending::with('product')->where('user_id', $id)->get();
+
+        foreach ($pendings as $pending) {
+            $qty += $pending->quantity;
+            $total += $pending->quantity * $pending->product->price;
+        }
+
+        $data = [
+            'quantity' => $qty,
+            'amount' => $total,
+        ];
+
+        return response()->json($data);
     }
 }

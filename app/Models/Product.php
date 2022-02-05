@@ -127,7 +127,7 @@ class Product extends Model
         return $productsName;
     }
 
-    private function discountStock($id, $qty)
+    public static function discountStock($id, $qty)
     {
         $total = 0;
         $product = Product::findOrFail($id);

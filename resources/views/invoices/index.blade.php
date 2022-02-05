@@ -56,29 +56,29 @@
                   </thead>
 
                   <tbody>
-                    @foreach($invoices as $invoice)
+                    @foreach($invoices as $item)
                       <tr>
                         <td class="text-center">
-                            <a href="{{ route('invoices.show', $invoice->id) }}">
-                                {{ $invoice->number }}
+                            <a href="{{ route('invoices.show', $item->id) }}">
+                                {{ $item->number }}
                             </a>
                         </td>
-                        <td class="text-center">{{ $invoice->user->name }}</td>
-                        <td class="text-center">{{ $invoice->date ?? '' }}</td>
+                        <td class="text-center">{{ $item->user->name }}</td>
+                        <td class="text-center">{{ $item->date ?? '' }}</td>
                         <td class="text-center" width="5%">
-                            @if ($invoice->status == 'PENDIENTE')
+                            @if ($item->status == 'PENDIENTE')
                                 <span class="label label-info">PENDIENTE</span>
-                            @elseif($invoice->status == 'PAGADO')
+                            @elseif($item->status == 'PAGADO')
                                 <span class="label label-success">PAGADO</span>
-                            @elseif($invoice->status == 'CANCELADO')
+                            @elseif($item->status == 'CANCELADO')
                                 <span class="label label-danger">CANCELADO</span>
                             @endif
                         </td>
-                        <td class="text-center">{{ $invoice->date_pay ?? '' }}</td>
-                        <td class="text-center">{{ $invoice->cancel_date ? date('d/m/Y', strtotime($invoice->cancel_date)) : '' }}</td>
-                        <td class="text-center">$ {{ $invoice->amount }}</td>
+                        <td class="text-center">{{ $item->date_pay ?? '' }}</td>
+                        <td class="text-center">{{ $item->cancel_date ? date('d/m/Y', strtotime($item->cancel_date)) : '' }}</td>
+                        <td class="text-center">$ {{ $item->amount }}</td>
                         <td class="text-center" width="5%">
-                            <a href="{{ route('invoices.show', $invoice->id) }}" class="btn btn-info"><i class="fa fa-eye"></i>  Ver</a>
+                            <a href="{{ route('invoices.show', $item->id) }}" class="btn btn-info"><i class="fa fa-eye"></i>  Ver</a>
                         </td>
                       </tr>
                     @endforeach

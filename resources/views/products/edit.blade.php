@@ -12,9 +12,9 @@
 @endsection
 
 @section('content')
-<form id="product-form" method="POST" action="{{ route('products.update', $product->id) }}" enctype="multipart/form-data" data-parsley-validate>
+<form id="demo-form" method="POST" action="{{ route('products.update', $product->id) }}" enctype="multipart/form-data" data-parsley-validate>
   @csrf
-  @method('put')
+  @method('PUT')
   <div class="x_panel">
     <div class="x_title">
       <h2><i class="fa fa-cubes"></i> Actualizar Producto</h2>

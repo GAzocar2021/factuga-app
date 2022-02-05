@@ -50,6 +50,6 @@ class User extends Authenticatable
 
     public function invoices()
     {
-        return $this->hasMany(Invoices::class);
+        return $this->hasMany(Invoice::class);
     }
 }

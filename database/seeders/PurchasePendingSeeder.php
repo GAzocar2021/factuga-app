@@ -14,22 +14,22 @@ class PurchasePendingSeeder extends Seeder
      */
     public function run()
     {
-        $purchase = [
+        $pending = [
             [
-                'user_id' => 5,
+                'user_id' => 2,
                 'product_id' => 1,
                 'quantity' => 1,
                 'amount' => 117.57,
             ],
             [
-                'user_id' => 5,
+                'user_id' => 2,
                 'product_id' => 4,
                 'quantity' => 1,
                 'amount' => 231.48,
             ],
         ];
 
-        foreach ($purchase as $key => $value) {
+        foreach ($pending as $key => $value) {
             PurchasePending::create($value);
         }
     }

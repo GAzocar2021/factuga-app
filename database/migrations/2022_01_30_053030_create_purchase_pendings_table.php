@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePurchasesPendingTable extends Migration
+class CreatePurchasePendingsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreatePurchasesPendingTable extends Migration
      */
     public function up()
     {
-        Schema::create('purchases_pending', function (Blueprint $table) {
+        Schema::create('purchase_pendings', function (Blueprint $table) {
             $table->id();
 
             $table->foreignId('user_id')
@@ -36,6 +36,6 @@ class CreatePurchasesPendingTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('purchases_pending');
+        Schema::dropIfExists('purchase_pendings');
     }
 }
